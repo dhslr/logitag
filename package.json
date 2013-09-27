@@ -1,0 +1,33 @@
+{
+  "name": "logitag",
+  "version": "0.0.2",
+  "description": "A REST service that uses a logic engine based on tags to execute apps on specific devices.",
+  "main": "logitag.js",
+  "directories": {
+    "test": "tests",
+	"lib": "lib"
+  },
+  "scripts": {
+    "test": "cd ./tests; nodeunit .",
+    "start": "node ./server.js 7979"
+  },
+  "bin": {
+	  "logitag": "node ./server.js"
+  },
+  "dependencies" : {
+	  "restify" : ">=2.3.5",
+	  "utilities" : "git://github.com/tequnix/utilities.git",
+	  "lodash" : ">=2.1.0"
+  },
+  "author": {
+	  "name" : "Daniel Hassler",
+	  "email" : "tequnix@gmail.com"
+  },
+  "engine" : "node >= 0.8.0",
+  "repository": {
+	  "type": "git",
+	  "url" : "http://github.com/tequnix/logitag.git"
+  },
+  "private": true,
+  "license": "BSD"
+}

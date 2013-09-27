@@ -1,0 +1,8 @@
+Expr =/ "!" "(" Expr ")" / Tag / "(" Expr ")" / BinOpExpr 
+Expr =/ "->" [DIGIT] "(" LExpr ")" 
+LExpr = "!" "(" LExpr ")" / Tag / "(" LExpr ")" /  BinOpLExpr
+BinOpExpr = Tag BinOp Expr / "(" Expr ")" BinOp Expr
+BinOpLExpr = Tag BinOp LExpr / "(" LExpr ")" BinOp LExpr
+BinOp = "&&" / "||" 
+Tag = 1*ALPHA *ALPHANUM 
+ALPHANUM = ALPHA / DIGIT
