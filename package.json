@@ -15,8 +15,8 @@
 	  "logitag": "node ./server.js"
   },
   "dependencies" : {
-	  "restify" : ">=2.3.5",
 	  "utilities" : "git://github.com/tequnix/utilities.git",
+	  "restify" : ">=2.3.5",
 	  "lodash" : ">=2.1.0"
   },
   "author": {
