@@ -62,9 +62,9 @@ e
 	| '->' NUMBER e
 		{$$ = ['->', [Number($2), String($3)]];}
 	| IQEXPR
-		{$$ = String($1); console.log($1)}
+		{$$ = String($1);}
 	| IQEXPRW
-		{$$ = String($1); console.log($1)}
+		{$$ = String($1);}
 ;
 /*
 	: TAG
