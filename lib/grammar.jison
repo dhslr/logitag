@@ -10,7 +10,7 @@
 "&&"		return '&&';
 "||"		return '||';
 "!"		return '!';
-"("[a-zA-Z][\&\|\!\s\>\<\w\{\}\.\:\(\)]*")" return 'IQEXPRW';
+\([a-zA-Z][\&\|\!\s\>\<\w\{\}\.\:\(\)]*\) return 'IQEXPRW';
 [a-zA-Z][\&\|\!\>\<\w\{\}\.\:\(\)]* return 'IQEXPR';
 "("		return '(';
 ")"		return ')';
@@ -19,11 +19,11 @@
 /lex
 
 /* associations and precedence */
-%right '->'
 %left '&&'
 %left '||'
+%right '->'
 %right '!'
-%token IQEXPR NUMBER 
+%token IQEXPR IQEXPRW  NUMBER 
 
 %% /* language grammar */
 expressions 
@@ -51,14 +51,20 @@ e
 		{$$ = ['!', [$2]];}
 	| '(' e ')'
 		{$$ = $2;}
+/*
 	| '->' IQEXPRW
 		{$$ = ['->', [Number.POSITIVE_INFINITY, String($2)]];}
 	| '->' NUMBER IQEXPRW 
 		{$$ = ['->', [Number($2), String($3)]];}
-	| '->' IQEXPR
+*/
+	| '->' e
 		{$$ = ['->', [Number.POSITIVE_INFINITY, String($2)]];}
-	| '->' NUMBER IQEXPR
+	| '->' NUMBER e
 		{$$ = ['->', [Number($2), String($3)]];}
+	| IQEXPR
+		{$$ = String($1); console.log($1)}
+	| IQEXPRW
+		{$$ = String($1); console.log($1)}
 ;
 /*
 	: TAG
