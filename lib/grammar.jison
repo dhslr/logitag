@@ -4,14 +4,15 @@
 \s+		/* skipe whitespaces */
 [0-9]+	return 'NUMBER';
 "http"\:"//"[a-zA-Z0-9\-\.]+(\.[a-zA-Z]{2,3})?[\:\%\?\-\/\w]* return 'URL';
-/*
-[A-Za-z]\w* return 'TAG';
-*/
 "&&"		return '&&';
 "||"		return '||';
 "!"		return '!';
+"="		return '=';
+","		return ',';
+";"		return ';';
 \([a-zA-Z][\&\|\!\s\>\<\w\{\}\.\:\(\)]*\) return 'IQEXPRW';
-[a-zA-Z][\&\|\!\>\<\w\{\}\.\:\(\)]* return 'IQEXPR';
+[a-zA-Z][\&\|\!\>\<\w\{\}\.\:]* return 'IQEXPR';
+[A-Za-z]\w* return 'TAG';
 "("		return '(';
 ")"		return ')';
 "->"		return '->';
@@ -21,61 +22,38 @@
 /* associations and precedence */
 %left '&&'
 %left '||'
-%right '->'
 %right '!'
-%token IQEXPR IQEXPRW  NUMBER 
+%right '->'
+%token IQEXPR IQEXPRW NUMBER TAG
 
 %% /* language grammar */
 expressions 
 	: e EOF
 		{return $1;}
-/*
 	| decl EOF
 		{return $1;}
-*/
 	;
-/*
 decl
-	: TAG '=' URL ',' decl
+	: IQEXPR '=' URL ',' decl
 		{$$ = ['url', [$1, $3, $5]];}
-	| TAG '=' URL ';' e
+	| IQEXPR '=' URL ';' e
 		{$$ = ['url', [$1, $3, $5]];}
 	;
-*/
 e
 	: e '&&' e
 		{$$ = ['&&', [$1, $3]];}
 	| e '||' e
 		{$$ = ['||', [$1, $3]];}
-	| '!' e
-		{$$ = ['!', [$2]];}
 	| '(' e ')'
 		{$$ = $2;}
-/*
-	| '->' IQEXPRW
-		{$$ = ['->', [Number.POSITIVE_INFINITY, String($2)]];}
-	| '->' NUMBER IQEXPRW 
-		{$$ = ['->', [Number($2), String($3)]];}
-*/
+	| '!' e
+		{$$ = ['!', [$2]];}
 	| '->' e
-		{$$ = ['->', [Number.POSITIVE_INFINITY, String($2)]];}
+		{$$ = ['->', [Number.POSITIVE_INFINITY, $2]];}
 	| '->' NUMBER e
-		{$$ = ['->', [Number($2), String($3)]];}
+		{$$ = ['->', [Number($2), $3]];}
 	| IQEXPR
-		{$$ = String($1);}
+		{$$ = ['iqexpr', String($1)];}
 	| IQEXPRW
-		{$$ = String($1);}
+		{$$ = ['iqexpr', String($1)];}
 ;
-/*
-	: TAG
-		{$$ = ['tag', [String(yytext)]];}
-
-	| TAG '.' TAG
-		{$$ = ['tag', [$1, $3]];}
-*/
-/*
-	| VARIABLE '.' TAG
-		{$$ = ['variable', [$1.substr(1), $3]];}
-	| VARIABLE 
-		{$$ = ['variable', [$1.substr(1)]];}
-*/

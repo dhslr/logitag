@@ -41,14 +41,14 @@
 		test.ok(evaluator.evaluate("projector=http://teco.edu:123/projector, test=http://lamp; projector.on && test.on"));
 		test.ok(evaluator.evaluate("projector=http://teco.edu:123/projector, test=http://lamp; test.on && projector.on && test.on"));
 		test.ok(evaluator.evaluate("projector=http://teco.edu:123/projector, test=http://lamp, third=http://miau.org; test.on && projector.on && test.on && third"));
-		test.ok(evaluator.evaluate("projector=http://teco.edu:123/projector, test=http://lamp, third=http://miau.org; test.on && $(projector.temp > 40) && test.on && third"));
-		test.ok(evaluator.evaluate("projector=http://teco.edu:123/projector; projector.on && $(projector.temp > 42)"));
-		test.ok(evaluator.evaluate("projector=http://teco.edu:123/projector; $(projector.temp > 42) && projector.on"));
-		test.ok(evaluator.evaluate("blubb=http://localhost:777; -> !blubb && (b|| !b)"));
+		test.ok(evaluator.evaluate("projector=http://teco.edu:123/projector, test=http://lamp, third=http://miau.org; test.on && (projector.temp > 40) && test.on && third"));
+		test.ok(evaluator.evaluate("projector=http://teco.edu:123/projector; projector.on && (projector.temp > 42)"));
+		test.ok(evaluator.evaluate("projector=http://teco.edu:123/projector; (projector.temp > 42) && projector.on"));
+		test.ok(evaluator.evaluate("blubb=http://localhost:777; -> !blubb && (b || !b)"));
 		test.ok(evaluator.evaluate("bla=http://web.de,blubb=http://google.de; -> !blubb && (b|| !b)"));
 		test.ok(evaluator.evaluate("bla=http://web.de,blubb=http://google.de; -> e && (b || !b)"));
-		test.ok(evaluator.evaluate("bla=http://web.de,blubb=http://google.de; -> (a && $(bla.on && true))"));
-		test.ok(evaluator.evaluate("bla=http://web.de,blubb=http://google.de; -> (blubb || $(bla.on && true))"));
+		test.ok(evaluator.evaluate("bla=http://web.de,blubb=http://google.de; -> (a && (bla.on && true))"));
+		test.ok(evaluator.evaluate("bla=http://web.de,blubb=http://google.de; -> (blubb || (bla.on && true))"));
 		test.done();
 	};
 	exports.test_false = function (test) {
@@ -64,7 +64,7 @@
 		test.ok(!evaluator.evaluate("-> c && c"));
 		test.ok(!evaluator.evaluate("-> (a && b && e) && c"));
 		test.ok(!evaluator.evaluate("bla=http://web.de; -> bla.off && (b|| !b)"));
-		test.ok(!evaluator.evaluate("projector=http://teco.edu:123/projector; projector.on && $(projector.temp > 420)"));
+		test.ok(!evaluator.evaluate("projector=http://teco.edu:123/projector; projector.on && (projector.temp > 420)"));
 		test.throws(function () {
 			evaluator.evaluate("bla=http://web.de, -> e && (b|| !b)");
 		});
