@@ -54,7 +54,7 @@
 		test.ok(evaluator.evaluate("-> tag1 || (test.on && projector.on && projector.temp > 25) "));
 		test.ok(evaluator.evaluate("-> tag1 || test.on && -> ((projector.temp > 20) && (projector.on))"));
 		test.ok(evaluator.evaluate("-> tag1 || test.getOn() && -> ((projector.temp > 20) && (projector.on))"));
-		
+		test.ok(evaluator.evaluate("-> (bla.on && !blubb) && projector.temp > 20"));
 		test.done();
 	};
 	exports.test_false = function (test) {

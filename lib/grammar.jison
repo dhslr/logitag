@@ -7,14 +7,14 @@
 
 %%
 \s+ 				{} /* skip whitespace */
-"||"		 		{ console.log("||"); return '||';}
-"&&"		 		{ console.log("&&"); return '&&';}
-"->"		 		{ console.log("->"); this.begin('TEMPOPSTART'); temp = ""; return 'TEMPOP';}
+"||"		 		{ return '||';}
+"&&"		 		{ return '&&';}
+"->"		 		{ this.begin('TEMPOPSTART'); temp = ""; return 'TEMPOP';}
 "var"		 		{ this.begin('DECL'); }
 ([^-\&\|]+(-[^>\&\|])?)+	{ this.less(); this.begin('CONTENT'); temp = "";}
 
 <DECL>\s+	   {}
-<DECL>";"	   { console.log("; begin init"); this.begin('INITIAL'); return ';'; }
+<DECL>";"	   { this.begin('INITIAL'); return ';'; }
 <DECL>"="	   { return '='; }
 <DECL>","	   { return ','; }
 <DECL>[^\=\,\;]+   { return 'VAL'; }
@@ -24,11 +24,11 @@
 <TEMPOPSTART>[^0-9]	{ this.less(); this.begin('CONTENT'); } 
 
 <CONTENT>\s+		{ temp += yytext; }
-<CONTENT>"&&"		{ console.log("<CONTENT>&&: %j", yytext); this.less(); yytext = temp; this.begin('INITIAL'); return 'CONTENT'; }
-<CONTENT>"||"		{ console.log("<CONTENT>||: %j", yytext); this.less(); yytext = temp; this.begin('INITIAL'); return 'CONTENT'; }
-<CONTENT>"("		{ console.log("<CONTENT>(: %j", yytext); this.begin('KLAMMER'); temp += yytext; count = 1;}
+<CONTENT>"&&"		{ this.less(); yytext = temp; this.begin('INITIAL'); return 'CONTENT'; }
+<CONTENT>"||"		{ this.less(); yytext = temp; this.begin('INITIAL'); return 'CONTENT'; }
+<CONTENT>"("		{ this.begin('KLAMMER'); temp += yytext; count = 1;}
 <CONTENT><<EOF>>	{ yytext = temp; return 'CONTENT'; } 
-<CONTENT>[^()\&\|]+	{ console.log("<CONTENT>.+: %j", yytext);  temp += yytext; }
+<CONTENT>[^()\&\|]+	{ temp += yytext; }
 
 <KLAMMER>\s+		{ temp += yytext; }
 <KLAMMER>"("		{ temp += yytext; count++; }
