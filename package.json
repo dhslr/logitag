@@ -8,11 +8,11 @@
 	"lib": "lib"
   },
   "scripts": {
-    "test": "cd ./tests; nodeunit .",
-    "start": "node ./server.js 7979"
+    "test": "cd tests; nodeunit .",
+    "start": "node server.js 7979"
   },
   "bin": {
-	  "logitag": "node ./server.js"
+	  "logitag": "./server.js"
   },
   "dependencies" : {
 	  "utilities" : "git://github.com/tequnix/utilities.git",
