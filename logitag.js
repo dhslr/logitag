@@ -34,7 +34,6 @@
 	//mixin tags 
 	//TOOD: does not get updated
 	concast.on("newTags", function (tags) {
-		//console.log(tags);
 		_.forEach(_clients, function (client) {
 			_.forEach(client.currentTagWindows, function (cWin) {
 				_.forEach(tags, function (tag) {
@@ -129,6 +128,7 @@
 		this.activate = function (app, client) {
 			self.app = app;
 			self.client = client;
+			console.log("Activating app %j", app);
 			is_running(function (res) {
 				if (!res) {
 					console.log("Not running");
@@ -364,18 +364,19 @@
 						var app = apps[i];
 						if (evaluator.evaluate(app.rule, client.tags)) {
 							// evaluated to true
-							//console.log("Executing app %j", app);
 							//TODO: move arguments to constructor
 							var exe = new ExecutionHandler();
 							exe.activate(app, client);
 							//exe.execute(app, client);
 						} else {
 							// evaluated to false
-							console.log(tags);
+							//console.log("Killing app %j", app);
+							//console.log(tags);
 							kill_it(app, client);
 						}	
 					}
 				});
+			console.log("Last tag win: %j", client.tags[client.tags.length - 1]);
 			}
 		};
 	};
