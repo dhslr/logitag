@@ -9,7 +9,6 @@
 		http_server = restify.createServer({name: "logitag"}),
 		_clients = {},
 		clients = [],
-		appool_apps = {},
 		get_apps,
 		url = require("url"),
 		_ = require("lodash"),
@@ -35,40 +34,13 @@
 	concast.on("newTags", function (tags) {
 		_.forEach(_clients, function (client) {
 			_.forEach(client.currentTagWindows, function (cWin) {
-				_.forEach(tags, function (tag) {
-					if(_.isObject(tag)) {
-						cWin.tags_obj[tag.name] = tag;
-					} else {
-						cWin.tags_obj[tag] = tag;
-					}
-					cWin.size = cWin.size + 1;
-				});
+				_.extend(cWin.tags_obj, tags);
+				cWin.size = cWin.size + tags.length;
 			});
 		});
 	});
 	concast.setAppoolUrl(appool_url);
 	concast.start();
-
-
-
-	/*
-	glTags = (function () {
-		var self = this,
-			win1 = [],
-			win2 = [],
-		   win1l,
-		   win2l;
-		this.tags = [];
-		win1l = function (tags) {
-			win1.push(tags);
-		};
-		concast.on("newTags", win1l);
-		setInterval(function () {
-			self.push(win1);
-			win1 = [];
-		}, config.window_size);
-	})();
-	*/
 	
 	/**
 	 * Override the standard window size.
