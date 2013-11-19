@@ -13,7 +13,7 @@
 		url = require("url"),
 		_ = require("lodash"),
 		config = require("./config/default.js"),
-		appool_url = config.appool_url,
+		appool = {},
 		assert = require("assert"),
 		evaluator = require("./lib/evaluator.js"),
 		concast = require("./lib/concast.js"),
@@ -23,12 +23,12 @@
 		kill_it,
 		events = require("events"),
 		emitter = new events.EventEmitter(),
-		util = require("util"),
 		open_tag_window,
 		close_tag_window,
 		timers = {},
 		update_clients;
 	
+	appool.url = config.appool_url;
 	//mixin tags 
 	//TOOD: does not get updated
 	concast.on("newTags", function (tags) {
@@ -39,7 +39,7 @@
 			});
 		});
 	});
-	concast.setAppoolUrl(appool_url);
+	concast.setAppoolUrl(appool.url);
 	concast.start();
 	
 	/**
@@ -60,6 +60,13 @@
 		config.window_epsilon = e;
 	};
 
+	/*....
+		TODO: impl max temp op for garbage collection
+	_.forEach(apps, function (app) {
+		get_max_len(app.rule);
+	});
+	...*/
+
 	get_apps = function (url, cb) {
 		var json_client = restify.createJsonClient({
 			url: url
@@ -69,12 +76,10 @@
 				console.log(err);
 				throw err;
 			} else {
-				assert.ok(util.isArray(obj));
+				assert.ok(_.isArray(obj));
 				if (typeof cb === "function") {
 					cb(obj);
 				}
-				//appo = obj;
-				//console.log("Updated apps: %j", apps);
 			}
 		});	
 	};
@@ -141,7 +146,7 @@
 					emitter.emit("error",
 						{error: err, client: self.client.url, app: self.app});
 				} else {
-					assert.ok(util.isArray(obj));
+					assert.ok(_.isArray(obj));
 					running_apps = obj;
 					for (var i = 0; !running && i < running_apps.length; i++) {
 						//TODO: version cannot be checked
@@ -165,7 +170,7 @@
 					emitter.emit("error", 
 						{error: err, client: self.client.url, app: self.app});
 				} else {
-					assert.ok(util.isArray(obj));
+					assert.ok(_.isArray(obj));
 					client_apps = obj;
 					for (var i = 0, l = client_apps.length; !has_app && i < l; i ++) {
 						var v = client_apps[i];
@@ -181,7 +186,7 @@
 		};
 
 		get_send = function () {
-			var _url = appool_url;
+			var _url = appool.url;
 			pkgTransfer.download(_url, self.app.name, function (err, pkg_path) {
 				if (err) {
 					emitter.emit("error", 
@@ -265,7 +270,7 @@
 		json_client.get("/running", function (err, req, res, obj) {
 			var running_apps = obj;
 			if (!err) {
-				if (util.isArray(running_apps)) {
+				if (_.isArray(running_apps)) {
 					for (var i = 0; i < running_apps.length; i++) {
 						if (app.name === running_apps[i].name) {
 							console.log("Killing %j", app.name);
@@ -282,6 +287,7 @@
 		return function () {
 			var tagWindow,
 				tags = [],
+				evaluateH,
 				oldTags;
 			//console.log("Closing tag window for %j", client.url);
 			if (typeof client !== "undefined") {
@@ -322,15 +328,7 @@
 						client.tags.push([tags, (new Date()).valueOf()]);
 					}
 				}
-				// new tag set -> evaluate
-				var _url = appool_url;
-				if (!config.deploy) {
-					// check only apps installed on client
-					_url = client.url;
-				}
-				//TODO: gets new apps every time..
-				get_apps(_url, function (apps) {
-					//console.log("Apps: %j", apps);
+				evaluateH = function (apps) {
 					for (var i = 0, l = apps.length; i < l; i++) {
 						var app = apps[i];
 						if (evaluator.evaluate(app.rule, client.tags)) {
@@ -338,7 +336,6 @@
 							//TODO: move arguments to constructor
 							var exe = new ExecutionHandler();
 							exe.activate(app, client);
-							//exe.execute(app, client);
 						} else {
 							// evaluated to false
 							//console.log("Killing app %j", app);
@@ -346,8 +343,30 @@
 							kill_it(app, client);
 						}	
 					}
-				});
-			console.log("Last tag win: %j", client.tags[client.tags.length - 1]);
+				};
+				//TODO: more frequent updates necessary?
+				// new tag set -> evaluate
+				if (!config.deploy) {
+					// check only apps installed on client
+					if(_.isEmpty(client.installed_apps)) {
+						get_apps(client.url, function (apps) {
+							client.installed_apps = apps;
+							evaluateH(client.installed_apps);
+						});
+					} else {
+						evaluateH(client.installed_apps);
+					}
+				} else {
+					if(_.isEmpty(appool.apps)) {
+						get_apps(appool.url, function (apps) {
+							appool.apps = apps;
+							evaluateH(appool.apps);
+						});
+					} else {
+						evaluateH(appool.apps);
+					}
+				}
+				console.log("Last tag win: %j", client.tags[client.tags.length - 1]);
 			}
 		};
 	};
@@ -359,7 +378,7 @@
 				tags_obj = {};
 			//console.log("Open TW: Client %j", client);
 			if (typeof client !== "undefined") {
-				if (util.isArray(tags)) {
+				if (_.isArray(tags)) {
 					size = tags.length;
 					tags.forEach(function (tag) {
 						if (typeof tag === "object") {
@@ -392,7 +411,7 @@
 			res.send(new restify.MissingParameterError("port missing"));
 		} else if (typeof req.params.tags === "undefined") {
 			res.send(new restify.MissingParameterError("tags missing"));
-		} else if (!util.isArray(req.params.tags)) {
+		} else if (!_.isArray(req.params.tags)) {
 			res.send(new restify.InvalidArgumentError("tags must be an array"));
 		} else {
 			//TODO: just assumes http
@@ -460,10 +479,11 @@
 				//setTimeout(open_tag_window(_url), 0);
 			} else if (service.name === "appool") {
 				console.log("Appool found %j", _url);
-				appool_url = _url;
-				//update_apps(_url, function (apps) {
-				//	appool_apps = apps;
-				//});
+				appool.url = _url;
+				concast.setAppoolUrl(appool.url);
+				get_apps(_url, function (apps) {
+					appool.apps = apps;
+				});
 			}
 		}
 	});
