@@ -33,10 +33,6 @@
 	//mixin tags 
 	//TOOD: does not get updated
 	concast.on("newTags", function (tags) {
-<<<<<<< HEAD
-=======
-		console.log("Concast: %j", tags);
->>>>>>> d667e94d0857f312e13b69525e0d2689f565139f
 		_.forEach(_clients, function (client) {
 			_.forEach(client.currentTagWindows, function (cWin) {
 				_.forEach(tags, function (tag) {
