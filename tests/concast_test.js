@@ -4,16 +4,18 @@
 		appool = require("appool");
 
 	module.exports =  {
-		setUp : function (cb) {
+		test_timeframe : function (test) {
 			appool.listen(0, function (url) {
 				concast.setAppoolUrl(url);
-				cb();
-			});
-		},
-		test_timeframe : function (test) {
-			concast.getTimeframe(function (time) {
-				console.log("Timeframe: %j", time);
-				test.done();
+				console.log("Appool started on: %j", url);
+				//needed because of async npm callbacks 
+				setTimeout(function () {
+					concast.getTimeframe(function (time) {
+						test.equals(time, 17);
+						appool.getServer().close();
+						test.done();
+					});
+				}, 1000);
 			});
 		}
 	};
