@@ -75,7 +75,7 @@
 		test.ok(!evaluator.evaluate("-> tag1 || (test.on && projector.on && projector.temp > 45) "));
 		test.ok(!evaluator.evaluate("-> tag1 || (!test.on || !projector.on)"));
 		test.ok(!evaluator.evaluate("-> tag1 || !test.on && -> ((projector.temp > 53) && !(projector.on))"));
-		test.ok(!evaluator.evaluate("-> tag1 || ( (function { if (test.on) { return false; } else { return true;} ; })() ) || !projector.on"));
+		test.ok(!evaluator.evaluate("-> tag1 || ( (function() { if (test.on) { return false; } else { return true;} ; })() ) || !projector.on"));
 		
 		/*
 		test.throws(function () {
