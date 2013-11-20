@@ -8,8 +8,8 @@
 	"lib": "lib"
   },
   "scripts": {
-    "test": "cd ./tests; nodeunit .",
-    "start": "node ./server.js 7979"
+    "test": "cd tests; nodeunit .",
+    "start": "node server.js 7979"
   },
   "bin": {
 	  "logitag": "./server.js"
