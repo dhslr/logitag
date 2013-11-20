@@ -19,6 +19,9 @@
 	  "restify" : ">=2.3.5",
 	  "lodash" : ">=2.1.0"
   },
+  "devDependencies" : {
+	  "appool" : "git://github.com/tequnix/appool.git" 
+  },
   "author": {
 	  "name" : "Daniel Hassler",
 	  "email" : "tequnix@gmail.com"
