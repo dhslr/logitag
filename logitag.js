@@ -25,9 +25,11 @@
 		emitter = new events.EventEmitter(),
 		open_tag_window,
 		close_tag_window,
-		timers = {},
+		timers = {},	
+		garbage_collect,
 		update_clients;
 	
+
 	appool.url = config.appool_url;
 	//mixin tags 
 	//TOOD: does not get updated
@@ -40,7 +42,25 @@
 		});
 	});
 	concast.setAppoolUrl(appool.url);
-	concast.start();
+
+	garbage_collect = function (client) {
+		var timeframe,
+			buffer = 5,
+			n = 0;
+		concast.getTimeframe(function (time) {
+			timeframe = time*1000;
+			if (Number.isFinite(timeframe) && timeframe > 0) {
+				console.log("GBC!");
+				// calculate frames to keep
+				n = buffer + Math.ceil(timeframe / config.window_size);
+				if (client.tags.length > n) {
+					//keep only the n last elements
+					client.tags = client.tags.slice((-1)*n);
+				}
+				global.gc();
+			} 
+		});
+	};
 	
 	/**
 	 * Override the standard window size.
@@ -59,13 +79,6 @@
 	exports.setEpsilon = function (e) {
 		config.window_epsilon = e;
 	};
-
-	/*....
-		TODO: impl max temp op for garbage collection
-	_.forEach(apps, function (app) {
-		get_max_len(app.rule);
-	});
-	...*/
 
 	get_apps = function (url, cb) {
 		var json_client = restify.createJsonClient({
@@ -327,6 +340,11 @@
 					} else {
 						client.tags.push([tags, (new Date()).valueOf()]);
 					}
+					//TODO: externalize threshold?
+					if (++client.new_tags_count > 30) {
+						client.new_tags_count = 0;
+						garbage_collect(client);
+					}
 				}
 				evaluateH = function (apps) {
 					for (var i = 0, l = apps.length; i < l; i++) {
@@ -334,8 +352,9 @@
 						if (evaluator.evaluate(app.rule, client.tags)) {
 							// evaluated to true
 							//TODO: move arguments to constructor
-							var exe = new ExecutionHandler();
-							exe.activate(app, client);
+							client.executionHandler.activate(app, client, function () {
+								exe.close();
+							});
 						} else {
 							// evaluated to false
 							//console.log("Killing app %j", app);
@@ -416,12 +435,14 @@
 		} else {
 			//TODO: just assumes http
 			_url = url.parse("http://" + req.connection.remoteAddress + ":" + req.params.port).href;
-			console.log("New Tags: %j", req.params.tags);
+			//console.log("New Tags: %j", req.params.tags);
 			//console.log("Url: %j", _url);
 			//console.log("Requ from: %j", _clients[_url]);
 			if (typeof _clients[_url] === "undefined") {
 				_clients[_url] = {up: true, url: _url, tags: []};
 				_clients[_url].currentTagWindows = [];
+				_clients[_url].new_tags_count = 1;
+				_clients[_url].executionHandler = new ExecutionHandler();
 				setTimeout(open_tag_window(_url, req.params.tags), 0);
 				update_clients();
 			} else {
