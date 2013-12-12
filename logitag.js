@@ -50,7 +50,6 @@
 		concast.getTimeframe(function (time) {
 			timeframe = time*1000;
 			if (Number.isFinite(timeframe) && timeframe > 0) {
-				console.log("GBC!");
 				// calculate frames to keep
 				n = buffer + Math.ceil(timeframe / config.window_size);
 				if (client.tags.length > n) {
